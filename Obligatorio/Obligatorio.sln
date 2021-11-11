@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileHandling", "FileHandlin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{01D7764D-0C54-4183-ACBF-EAF63F1BF190}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminServer", "AdminServer\AdminServer.csproj", "{9691181E-7DDB-4182-AE4D-98B14A54C4AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminServer", "AdminServer\AdminServer.csproj", "{9691181E-7DDB-4182-AE4D-98B14A54C4AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
