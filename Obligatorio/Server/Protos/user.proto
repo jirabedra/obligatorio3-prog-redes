@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+//option csharp_namespace = "Server\Services";
+
+service UserService{
+	rpc AddUser (UserProto) returns (Response){};
+	rpc DeleteUser (UserName) returns (Response){};
+	rpc UpdateUser (UserUpdate) returns (Response){};
+}
+
+message UserProto{
+	
+}
+
+message UserName{
+	string name = 1;
+}
+
+message UserUpdate{
+
+}
+
+message Response{
+	bool result = 1;
+}
+

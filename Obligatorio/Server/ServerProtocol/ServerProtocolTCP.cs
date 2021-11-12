@@ -14,6 +14,7 @@ namespace ServerProtocol.Protocol
 {
     public class ServerProtocolTCP
     {
+
         private bool _exit = false;
         private readonly TcpListener _tcpListener = new TcpListener((new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings.Get("ServerIpAddress")),
                             Int32.Parse(ConfigurationManager.AppSettings.Get("NewServerPort")))));
