@@ -25,7 +25,7 @@ namespace DataAccess.Repositories
 
         public void listAllUsers()
         {
-            Console.WriteLine("Registered games are: ");
+            Console.WriteLine("Registered users are: ");
             int userPos = 0;
             foreach (var user in this.Users)
             {
@@ -43,6 +43,11 @@ namespace DataAccess.Repositories
                     user.Games.RemoveAll(game => g.Equals(game));
                 }
             }
+        }
+
+        public void DeleteUser(User user)
+        {
+            Users.Remove(user);
         }
     }
 }

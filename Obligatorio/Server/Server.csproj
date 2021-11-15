@@ -30,6 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include ="Protos\user.proto" GrpcService ="server"/>
+    <Protobuf Include="Protos\user.proto" GrpcService="server" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

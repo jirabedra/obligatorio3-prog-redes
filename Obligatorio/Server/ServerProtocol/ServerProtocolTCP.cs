@@ -1,5 +1,6 @@
 ﻿using BusinessLogic;
 using DataAccess.Repositories;
+using Grpc.Core;
 using ProtocolLibrary;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ServerProtocol.Protocol
 {
-    public class ServerProtocolTCP
+    public class ServerProtocolTCP : UserService.UserServiceBase
     {
 
         private bool _exit = false;
@@ -621,7 +622,37 @@ namespace ServerProtocol.Protocol
             return ret;
         }
 
+        public override Task<Response> AddUser(UserProto request, ServerCallContext context)
+        {
+            User user = new User(new List<Game>());
+            _userRepository.addUser(user);
+            return Task.FromResult(new Response()
+            {
+                Result = true
+            }) ;
+        }
+
+        public override Task<Response> DeleteUser(UserName id, ServerCallContext context)
+        {
+            var user = _userRepository.Users.Find(x => x.Id.Equals(id.Name));
+            if(user is null)
+            {
+                return Task.FromResult(new Response()
+                {
+                    Result = false
+                }) ;
+            }
+            else
+            {
+                _userRepository.DeleteUser(user);
+                return Task.FromResult(new Response()
+                {
+                    Result = false
+                });
+            }
+        }
+        }
     }
 
 
-}
+

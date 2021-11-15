@@ -13,11 +13,9 @@ namespace Server
     {
         public static async Task Main(string[] args)
         {
-
-
-            Console.WriteLine("LLEGA");
             ServerProtocolTCP server = new ServerProtocolTCP();
-            await server.RunServer();
+            var runServer = Task.Run(async () => await server.RunServer());
+            //await runServer;
             CreateHostBuilder(args).Build().Run();
             Console.WriteLine("Closing server application.");
         }
