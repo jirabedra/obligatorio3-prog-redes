@@ -2,6 +2,7 @@
 using DataAccess.Repositories;
 using Grpc.Core;
 using ProtocolLibrary;
+using Server.Protos;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -570,7 +571,7 @@ namespace ServerProtocol.Protocol
             return Encoding.UTF8.GetString(buffer);
         }
 
-        private void HandleMenu()
+        private async Task HandleMenu()
         {
             var userInput = Console.ReadLine();
             switch (userInput)
@@ -588,6 +589,9 @@ namespace ServerProtocol.Protocol
                 case "search for game":
                     break;
                 case "game details":
+                    break;
+                case "list users":
+                    ListAllUsers();
                     break;
                 default:
                     Console.WriteLine("Invalid option.");
@@ -625,7 +629,9 @@ namespace ServerProtocol.Protocol
         public override Task<Response> AddUser(UserProto request, ServerCallContext context)
         {
             User user = new User(new List<Game>());
-            _userRepository.addUser(user);
+            _userSemaphore.WaitOne();
+            _userRepository.Users.Add(user);
+            _userSemaphore.Release();
             return Task.FromResult(new Response()
             {
                 Result = true
@@ -651,8 +657,15 @@ namespace ServerProtocol.Protocol
                 });
             }
         }
+
+        private void ListAllUsers()
+        {
+            _userSemaphore.WaitOne();
+            _userRepository.listAllUsers();
+            _userSemaphore.Release();
         }
     }
+}
 
 
 

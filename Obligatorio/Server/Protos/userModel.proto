@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-//option csharp_namespace = "Server\Services";
+option csharp_namespace = "Server.Protos";
 
 service UserService{
 	rpc AddUser (UserProto) returns (Response){};
@@ -13,8 +13,9 @@ message UserProto{
 }
 
 message UserName{
-	string name = 1;
+	int32 name = 1;
 }
+
 
 message UserUpdate{
 

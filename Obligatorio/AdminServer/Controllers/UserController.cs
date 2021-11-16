@@ -16,16 +16,28 @@ namespace AdminServer.Controllers
     {
         private static ClientUserService userService = new ClientUserService();
 
-        [HttpGet("{name}")]
-        public async Task<IActionResult> Get(string name)
+        //https://localhost:44328/users/
+        [HttpPost]
+        public async Task<IActionResult> Post()
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:5001");
             var client = new UserService.UserServiceClient(channel);
             var reply = await client.AddUserAsync(
-                              new UserProto ()); ;
+                              new UserProto()); ;
             return Ok(reply);
         }
 
-
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            using var channel = GrpcChannel.ForAddress("https://localhost:5001");
+            var client = new UserService.UserServiceClient(channel);
+            var reply = await client.DeleteUserAsync(
+                new UserName()
+                {
+                    Name = id
+                });
+            return Ok(reply);
+        }
     }
 }

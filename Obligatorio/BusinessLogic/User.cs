@@ -7,6 +7,7 @@ namespace BusinessLogic
     public class User
     {
         private static int _nextId = 1;
+        public string Nickname { get; set; }
         public int Id { get; set; }
 
         public List<Game> Games { get; set; }

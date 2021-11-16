@@ -16,20 +16,16 @@ namespace DataAccess.Repositories
 
         public void addUser(User user)
         {
-            if (!this.Users.Contains(user))
-            {
-                this.Users.Add(user);
+                Users.Add(user);
                 Console.WriteLine($"User Id {user.Id} has been registered.");
-            }
         }
 
         public void listAllUsers()
         {
-            Console.WriteLine("Registered users are: ");
-            int userPos = 0;
-            foreach (var user in this.Users)
+            Console.WriteLine($"There are {Users.Count} users registered. Registered users are: ");
+            foreach (var user in Users)
             {
-                Console.WriteLine($"{++userPos}. {user.Id}");
+                Console.WriteLine($"User: {user.Id}");
             }
         }
 
