@@ -18,7 +18,8 @@ message UserName{
 
 
 message UserUpdate{
-
+	int32 name = 1;
+	string nickname = 2;
 }
 
 message Response{

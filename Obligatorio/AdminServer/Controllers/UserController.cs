@@ -24,7 +24,15 @@ namespace AdminServer.Controllers
             var client = new UserService.UserServiceClient(channel);
             var reply = await client.AddUserAsync(
                               new UserProto()); ;
-            return Ok(reply);
+            if(reply.Result == true)
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+
         }
 
         [HttpDelete("{id}")]
@@ -37,7 +45,33 @@ namespace AdminServer.Controllers
                 {
                     Name = id
                 });
+            if (reply.Result == true)
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
             return Ok(reply);
         }
+
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody] UserUpdate user)
+        {
+            using var channel = GrpcChannel.ForAddress("https://localhost:5001");
+            var client = new UserService.UserServiceClient(channel);
+            var reply = await client.UpdateUserAsync(user);
+            if (reply.Result == true)
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
+            return Ok(reply);
+        }
+
     }
 }

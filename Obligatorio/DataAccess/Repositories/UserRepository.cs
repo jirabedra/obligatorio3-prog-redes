@@ -25,7 +25,7 @@ namespace DataAccess.Repositories
             Console.WriteLine($"There are {Users.Count} users registered. Registered users are: ");
             foreach (var user in Users)
             {
-                Console.WriteLine($"User: {user.Id}");
+                Console.WriteLine($"User: {user.Id}, Nickname: {user.Nickname}");
             }
         }
 

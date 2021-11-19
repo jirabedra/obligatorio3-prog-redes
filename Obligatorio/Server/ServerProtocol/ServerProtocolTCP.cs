@@ -22,8 +22,8 @@ namespace ServerProtocol.Protocol
                             Int32.Parse(ConfigurationManager.AppSettings.Get("NewServerPort")))));
         private Semaphore _gameSemaphore = new Semaphore(1, 1);
         private Semaphore _userSemaphore = new Semaphore(1, 1);
-        private GameRepository _gameRepository = new GameRepository();
-        private UserRepository _userRepository = new UserRepository();
+        private static GameRepository _gameRepository = new GameRepository();
+        private static UserRepository _userRepository = new UserRepository();
 
         public async Task RunServer()
         {
@@ -38,11 +38,10 @@ namespace ServerProtocol.Protocol
             }
         }
 
-        private void LoadTestData()
+        private async Task LoadTestData()
         {
             Game game1 = new Game { Title = "Zelda", Genre = "adventure", Overview = "Save the princes.", Reviews = new List<Review>() };
             _gameRepository.addGame(game1);
-
             User user1 = new User(new List<Game>());
         }
 
@@ -599,7 +598,7 @@ namespace ServerProtocol.Protocol
             }
         }
 
-        private void PrintMenu()
+        private async Task PrintMenu()
         {
             Console.WriteLine("-------------------");
             Console.WriteLine("Available options: ");
@@ -609,6 +608,7 @@ namespace ServerProtocol.Protocol
             Console.WriteLine("publish review");
             Console.WriteLine("search for game");
             Console.WriteLine("game details");
+            Console.WriteLine("list users");
             Console.WriteLine("Enter the desired option: ");
         }
 
@@ -630,7 +630,9 @@ namespace ServerProtocol.Protocol
         {
             User user = new User(new List<Game>());
             _userSemaphore.WaitOne();
+            Console.WriteLine($"Users added: {_userRepository.Users.Count}");
             _userRepository.Users.Add(user);
+            Console.WriteLine($"Users added: {_userRepository.Users.Count}");
             _userSemaphore.Release();
             return Task.FromResult(new Response()
             {
@@ -653,10 +655,31 @@ namespace ServerProtocol.Protocol
                 _userRepository.DeleteUser(user);
                 return Task.FromResult(new Response()
                 {
-                    Result = false
+                    Result = true
                 });
             }
         }
+
+        public override Task<Response> UpdateUser(UserUpdate userUpdate, ServerCallContext context)
+        {
+            var user = _userRepository.Users.Find(x => x.Id.Equals(userUpdate.Name));
+            if (user is null)
+            {
+                return Task.FromResult(new Response()
+                {
+                    Result = false
+                });
+            }
+            else
+            {
+                user.Nickname = userUpdate.Nickname;
+                return Task.FromResult(new Response()
+                {
+                    Result = true
+                });
+            }
+        }
+
 
         private void ListAllUsers()
         {

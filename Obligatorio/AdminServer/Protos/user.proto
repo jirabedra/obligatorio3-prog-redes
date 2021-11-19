@@ -16,11 +16,12 @@ message UserName{
 	int32 name = 1;
 }
 
-message UserUpdate{
 
+message UserUpdate{
+	int32 name = 1;
+	string nickname = 2;
 }
 
 message Response{
 	bool result = 1;
 }
-
