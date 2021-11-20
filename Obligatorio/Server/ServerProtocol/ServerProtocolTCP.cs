@@ -1,7 +1,9 @@
 ﻿using BusinessLogic;
 using DataAccess.Repositories;
 using Grpc.Core;
+using LogsLogic;
 using ProtocolLibrary;
+using RabbitMQ.Client;
 using Server.Protos;
 using System;
 using System.Collections.Generic;
@@ -23,10 +25,12 @@ namespace ServerProtocol.Protocol
         private Semaphore _userSemaphore = new Semaphore(1, 1);
         private static GameRepository _gameRepository = new GameRepository();
         private static UserRepository _userRepository = new UserRepository();
+        ConnectionFactory logFactory = new ConnectionFactory() { HostName = "localhost" };
 
         public async Task RunServer()
         {
             //LoadTestData();
+            //SendBasicLogTest();
             _tcpListener.Start();
             var listenForTcpClients = ListenForTCPClients();
             Console.WriteLine("The server application is now running.");
@@ -202,8 +206,8 @@ namespace ServerProtocol.Protocol
         {
             string games = "";
             _userSemaphore.WaitOne();
-            User u = _userRepository.Users.Find(user => user.Equals(new User ( userID , null)) );
-            foreach(var g in u.Games)
+            User u = _userRepository.Users.Find(user => user.Equals(new User(userID, null)));
+            foreach (var g in u.Games)
             {
                 games += g.Title;
                 games += '\n';
@@ -636,18 +640,18 @@ namespace ServerProtocol.Protocol
             return Task.FromResult(new Response()
             {
                 Result = true
-            }) ;
+            });
         }
 
         public override Task<Response> DeleteUser(UserName id, ServerCallContext context)
         {
             var user = _userRepository.Users.Find(x => x.Id.Equals(id.Name));
-            if(user is null)
+            if (user is null)
             {
                 return Task.FromResult(new Response()
                 {
                     Result = false
-                }) ;
+                });
             }
             else
             {
@@ -679,13 +683,43 @@ namespace ServerProtocol.Protocol
             }
         }
 
-
         private void ListAllUsers()
         {
             _userSemaphore.WaitOne();
             _userRepository.listAllUsers();
             _userSemaphore.Release();
         }
+
+        private void SendBasicLogTest()
+        {
+            ConnectionFactory factory = new ConnectionFactory() { HostName = "localhost" };
+            using (var connection = factory.CreateConnection())
+            using (var channel = connection.CreateModel())
+            {
+                channel.QueueDeclare(queue: "hello",
+                    durable: false,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
+
+                var message = MessageLog(channel);
+                Console.WriteLine(" [x] Sent {0}", message);
+            }
+        }
+
+        private static string MessageLog(IModel channel)
+        {
+            string message = "aaaaaaaaaaaaaaaaaaaaaaa"; ;
+            Console.WriteLine($"Mensaje ={message}");
+            var body = Encoding.UTF8.GetBytes(message);
+
+            channel.BasicPublish(exchange: "",
+                routingKey: "hello",
+                basicProperties: null,
+                body: body);
+            return message;
+        }
+
     }
 }
 
