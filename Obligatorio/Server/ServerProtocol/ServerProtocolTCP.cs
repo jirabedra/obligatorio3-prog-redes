@@ -1,7 +1,9 @@
 ﻿using BusinessLogic;
 using DataAccess.Repositories;
 using Grpc.Core;
+using Logging;
 using LogsLogic;
+using Newtonsoft.Json;
 using ProtocolLibrary;
 using RabbitMQ.Client;
 using Server.Protos;
@@ -30,7 +32,7 @@ namespace ServerProtocol.Protocol
         public async Task RunServer()
         {
             //LoadTestData();
-            //SendBasicLogTest();
+            LogTests();
             _tcpListener.Start();
             var listenForTcpClients = ListenForTCPClients();
             Console.WriteLine("The server application is now running.");
@@ -414,6 +416,7 @@ namespace ServerProtocol.Protocol
             _userSemaphore.WaitOne();
             _userRepository.Users.Add(u);
             _userSemaphore.Release();
+            //Aca log mq de AUsuario
             return u.Id.ToString();
         }
         private async Task<string> ParseAndPublishGame(string gameToPublish)
@@ -636,6 +639,7 @@ namespace ServerProtocol.Protocol
             Console.WriteLine($"Users added: {_userRepository.Users.Count}");
             _userRepository.Users.Add(user);
             Console.WriteLine($"Users added: {_userRepository.Users.Count}");
+            SendLogAddUser(user.Id);
             _userSemaphore.Release();
             return Task.FromResult(new Response()
             {
@@ -643,11 +647,19 @@ namespace ServerProtocol.Protocol
             });
         }
 
+        private void SendLogAddUser(int id)
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AUser, Result = true, UserId = id, GameTitle = "", UserNewNickName = "" };
+            string msg = JsonConvert.SerializeObject(log);
+            SendLog(msg);
+        }
+
         public override Task<Response> DeleteUser(UserName id, ServerCallContext context)
         {
             var user = _userRepository.Users.Find(x => x.Id.Equals(id.Name));
             if (user is null)
             {
+                SendLogDeleteUser(user.Id, false);
                 return Task.FromResult(new Response()
                 {
                     Result = false
@@ -655,6 +667,7 @@ namespace ServerProtocol.Protocol
             }
             else
             {
+                SendLogDeleteUser(user.Id, true);
                 _userRepository.DeleteUser(user);
                 return Task.FromResult(new Response()
                 {
@@ -663,11 +676,20 @@ namespace ServerProtocol.Protocol
             }
         }
 
+        private void SendLogDeleteUser(int id, bool v)
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.BUser, Result = v, UserId = id, GameTitle = "", UserNewNickName = "" };
+            string msg = JsonConvert.SerializeObject(log);
+            SendLog(msg);
+        }
+
         public override Task<Response> UpdateUser(UserUpdate userUpdate, ServerCallContext context)
         {
             var user = _userRepository.Users.Find(x => x.Id.Equals(userUpdate.Name));
+            //Aca log mq de MUsuario
             if (user is null)
             {
+                SendLogModifyUser(user.Id, false, userUpdate.Nickname);
                 return Task.FromResult(new Response()
                 {
                     Result = false
@@ -675,12 +697,20 @@ namespace ServerProtocol.Protocol
             }
             else
             {
+                SendLogModifyUser(user.Id, true, userUpdate.Nickname);
                 user.Nickname = userUpdate.Nickname;
                 return Task.FromResult(new Response()
                 {
                     Result = true
                 });
             }
+        }
+
+        private void SendLogModifyUser(int id, bool v, string nickname)
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.MUser, Result = v, UserId = id, GameTitle = "", UserNewNickName = nickname };
+            string msg = JsonConvert.SerializeObject(log);
+            SendLog(msg);
         }
 
         private void ListAllUsers()
@@ -690,41 +720,80 @@ namespace ServerProtocol.Protocol
             _userSemaphore.Release();
         }
 
-        private void SendBasicLogTest()
+        private void SendLog(string msg)
         {
             ConnectionFactory factory = new ConnectionFactory() { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: "hello",
+                channel.QueueDeclare(queue: "obligatorioPRedes",
                     durable: false,
                     exclusive: false,
                     autoDelete: false,
                     arguments: null);
-
-                var message = MessageLog(channel);
-                Console.WriteLine(" [x] Sent {0}", message);
+                var message = MessageLog(channel, msg);
             }
         }
 
-        private static string MessageLog(IModel channel)
+        private static string MessageLog(IModel channel, string msg)
         {
-            string message = "aaaaaaaaaaaaaaaaaaaaaaa"; ;
-            Console.WriteLine($"Mensaje ={message}");
+            string message = msg;
             var body = Encoding.UTF8.GetBytes(message);
-
             channel.BasicPublish(exchange: "",
-                routingKey: "hello",
+                routingKey: "obligatorioPRedes",
                 basicProperties: null,
                 body: body);
             return message;
         }
 
+        private void LogTests() 
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AUser, Result = true, UserId = 27, GameTitle = "" };
+            Log log2 = new Log() { Date = DateTime.Now, OperationType = OperationType.BGame, Result = false, UserId = -1, GameTitle = "Zelda" };
+            Log log3 = new Log() { Date = DateTime.Now, OperationType = OperationType.MGame, Result = true, UserId = 27, GameTitle = "pepe" };
+            string msg = JsonConvert.SerializeObject(log);
+            string msg2 = JsonConvert.SerializeObject(log2);
+            string msg3 = JsonConvert.SerializeObject(log3);
+            SendLog(msg);
+            SendLog(msg2);
+            SendLog(msg3);
+        }
+
         public override Task<Response> AddGame(GameProto request, ServerCallContext context)
         {
+            //Descomenta y pone los parametros: gameTitle, true/false (lo que corresponda), 
+            //SendLogAddGame(gameTitle, restult);
             return base.AddGame(request, context);
         }
 
+        /*
+         * Llama los metodos antes del return con esas 2 variables (3 en el caso de asociar juego y usuario)
+         */
+
+        private void SendLogAddGame(string gameTitle, bool restult)
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AGame, Result = restult, UserId = -1, GameTitle = gameTitle, UserNewNickName = "" };
+            string msg = JsonConvert.SerializeObject(log);
+            SendLog(msg);
+        }
+        private void SendLogDeleteGame(string gameTitle, bool restult)
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.BGame, Result = restult, UserId = -1, GameTitle = gameTitle, UserNewNickName = "" };
+            string msg = JsonConvert.SerializeObject(log);
+            SendLog(msg);
+        }
+        private void SendLogModifyGame(string gameTitle, bool restult)
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.MGame, Result = restult, UserId = -1, GameTitle = gameTitle, UserNewNickName = "" };
+            string msg = JsonConvert.SerializeObject(log);
+            SendLog(msg);
+        }
+        private void SendLogAssoiation(string gameTitle, int userId, bool restult)
+        {
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AsocGameUser, Result = restult, UserId = userId, GameTitle = gameTitle, UserNewNickName = "" };
+            string msg = JsonConvert.SerializeObject(log);
+            SendLog(msg);
+        }
     }
 }
 

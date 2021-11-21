@@ -8,8 +8,10 @@ namespace LogsLogic
     public class Log
     {
         public OperationType OperationType { get; set; }
-        public string IntendedOperation { get; set; }
+        public int UserId { get; set; }
+        public string GameTitle { get; set; }
         public DateTime Date { get; set; }
         public bool Result { get; set; }
+        public string UserNewNickName { get; set; }
     }
 }
