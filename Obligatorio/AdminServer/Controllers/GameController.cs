@@ -9,19 +9,19 @@ using System.Threading.Tasks;
 namespace AdminServer.Controllers
 {
     [EnableCors("MyPolicy")]
-    [Route("users")]
+    [Route("games")]
     [ApiController]
-    public class UserController : Controller
+    public class GameController : Controller
     {
 
-        //https://localhost:44328/users/
+        //https://localhost:44328/games/
         [HttpPost]
         public async Task<IActionResult> Post()
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:5001");
             var client = new UserService.UserServiceClient(channel);
-            var reply = await client.AddUserAsync(
-                              new UserProto()); ;
+            var reply = await client.AddGameAsync(
+                              new GameProto()); ;
             if(reply.Result == true)
             {
                 return Ok();
@@ -37,14 +37,14 @@ namespace AdminServer.Controllers
         //Si no lo encuentra retorna 404NOTFOUND
         //https://localhost:44328/users/3
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(string name)
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:5001");
             var client = new UserService.UserServiceClient(channel);
-            var reply = await client.DeleteUserAsync(
-                new UserName()
+            var reply = await client.DeleteGameAsync(
+                new GameName()
                 {
-                    Name = id
+                    Name = name
                 });
             if (reply.Result == true)
             {
@@ -65,13 +65,13 @@ namespace AdminServer.Controllers
         "nickname" : "Pepe"
         }*/
         //Si lo encuentra, retorno OK200, si no, retorna 404NOTFOUND.
-        //https://localhost:44328/users/
+        //https://localhost:44328/games/
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] UserUpdate user)
+        public async Task<IActionResult> Put([FromBody] GameUpdate game)
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:5001");
             var client = new UserService.UserServiceClient(channel);
-            var reply = await client.UpdateUserAsync(user);
+            var reply = await client.UpdateGameAsync(game);
             if (reply.Result == true)
             {
                 return Ok();

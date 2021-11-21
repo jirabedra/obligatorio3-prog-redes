@@ -6,6 +6,9 @@ service UserService{
 	rpc AddUser (UserProto) returns (Response){};
 	rpc DeleteUser (UserName) returns (Response){};
 	rpc UpdateUser (UserUpdate) returns (Response){};
+	rpc AddGame (GameProto) returns (Response){};
+	rpc DeleteGame (GameName) returns (Response){};
+	rpc UpdateGame (GameUpdate) returns (Response){};
 }
 
 message UserProto{
@@ -24,4 +27,23 @@ message UserUpdate{
 
 message Response{
 	bool result = 1;
+}
+
+
+
+
+message GameProto{
+	string title = 1;
+	string genre = 2;
+}
+
+message GameName{
+	string name = 1;
+}
+
+
+message GameUpdate{
+	string title = 1;
+	string newName = 2;
+	string newGenre = 3;
 }

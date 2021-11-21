@@ -720,6 +720,11 @@ namespace ServerProtocol.Protocol
             return message;
         }
 
+        public override Task<Response> AddGame(GameProto request, ServerCallContext context)
+        {
+            return base.AddGame(request, context);
+        }
+
     }
 }
 
