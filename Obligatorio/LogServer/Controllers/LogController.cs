@@ -12,9 +12,21 @@ namespace LogServer.Controllers
     [ApiController]
     public class LogController : Controller
     {
-        public IActionResult Index()
+
+        //https://localhost:44374/logs/
+
+        [HttpGet]
+        public async Task<IActionResult> Get([FromBody] string data)
         {
-            return View();
+            //List<>;
+            if (data == null)
+            {
+                return BadRequest();
+            }
+            else
+            {
+                return Ok();
+            }
         }
     }
 }

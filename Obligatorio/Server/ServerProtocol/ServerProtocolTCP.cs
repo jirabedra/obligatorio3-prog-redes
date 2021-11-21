@@ -746,11 +746,12 @@ namespace ServerProtocol.Protocol
             return message;
         }
 
+        //Borrar LogTests antes de la entrega
         private void LogTests() 
         {
-            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AUser, Result = true, UserId = 27, GameTitle = "" };
-            Log log2 = new Log() { Date = DateTime.Now, OperationType = OperationType.BGame, Result = false, UserId = -1, GameTitle = "Zelda" };
-            Log log3 = new Log() { Date = DateTime.Now, OperationType = OperationType.MGame, Result = true, UserId = 27, GameTitle = "pepe" };
+            Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AUser, Result = true, UserId = 27, GameTitle = "", UserNewNickName = "" };
+            Log log2 = new Log() { Date = DateTime.Now, OperationType = OperationType.BGame, Result = false, UserId = -1, GameTitle = "Zelda", UserNewNickName = "" };
+            Log log3 = new Log() { Date = DateTime.Now, OperationType = OperationType.MGame, Result = true, UserId = 27, GameTitle = "pepe", UserNewNickName = "" };
             string msg = JsonConvert.SerializeObject(log);
             string msg2 = JsonConvert.SerializeObject(log2);
             string msg3 = JsonConvert.SerializeObject(log3);
