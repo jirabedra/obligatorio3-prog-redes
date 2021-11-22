@@ -43,19 +43,23 @@ namespace LogServer.LogServices.Implementations
             logsSemaphore.WaitOne();
             List<Log> auxLog = new List<Log>(_logs);
             logsSemaphore.Release();
+
             throw new NotImplementedException();
+
         }
 
-        public List<Log> FilterByGame(string gameName)
+        public List<Log> FilterByGame(List<string> gameNames)
         {
             UpdateLogs();
             logsSemaphore.WaitOne();
             List<Log> auxLog = new List<Log>(_logs);
             logsSemaphore.Release();
             List<Log> ret = new List<Log>();
+            bool validOperationType;
             foreach (var log in auxLog)
             {
-                if (log.OperationType == OperationType.AGame || log.OperationType == OperationType.BGame || log.OperationType == OperationType.MGame || log.OperationType == OperationType.AsocGameUser) 
+                validOperationType = log.OperationType == OperationType.AGame || log.OperationType == OperationType.BGame || log.OperationType == OperationType.MGame || log.OperationType == OperationType.AsocGameUser;
+                if (validOperationType)
                 {
                     ret.Add(log);
                 }
@@ -63,18 +67,23 @@ namespace LogServer.LogServices.Implementations
             return ret;
         }
 
-        public List<Log> FilterByUser(string userNickName)
+        public List<Log> FilterByUser(List<int> userIds)
         {
             UpdateLogs();
             logsSemaphore.WaitOne();
             List<Log> auxLog = new List<Log>(_logs);
             logsSemaphore.Release();
             List<Log> ret = new List<Log>();
+            bool intendedOperationType;
             foreach (var log in auxLog)
             {
-                if (log.OperationType == OperationType.AUser || log.OperationType == OperationType.BUser || log.OperationType == OperationType.MUser || log.OperationType == OperationType.AsocGameUser)
+                intendedOperationType = log.OperationType == OperationType.AUser || log.OperationType == OperationType.BUser || log.OperationType == OperationType.MUser || log.OperationType == OperationType.AsocGameUser;
+                if (intendedOperationType)
                 {
-                    ret.Add(log);
+                    if (userIds.Contains(log.UserId))
+                    {
+                        ret.Add(log);
+                    }
                 }
             }
             return ret;

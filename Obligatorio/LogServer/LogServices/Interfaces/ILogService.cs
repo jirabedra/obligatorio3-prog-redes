@@ -8,8 +8,8 @@ namespace LogServer.LogServices.Interfaces
 {
     public interface ILogService
     {
-        public List<Log> FilterByGame(string gameName);
-        public List<Log> FilterByUser(string userNickName);
+        public List<Log> FilterByGame(List<string> gameNames);
+        public List<Log> FilterByUser(List<int> userIds);
         public List<Log> FilterByDate(DateTime date);
     }
 }
