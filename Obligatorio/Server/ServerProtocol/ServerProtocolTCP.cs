@@ -1,5 +1,6 @@
 ﻿using BusinessLogic;
 using DataAccess.Repositories;
+using Google.Protobuf.Collections;
 using Grpc.Core;
 using Logging;
 using Newtonsoft.Json;
@@ -814,6 +815,42 @@ namespace ServerProtocol.Protocol
 
         }
 
+
+        public override Task<FullGame> GetGame(GameName name, ServerCallContext context)
+        {
+            //List<ReviewProto> list = new List<ReviewProto>();
+            var game = _gameRepository.Games.Find(x => x.Title.Equals(name.Name));
+            if(game is null)
+            {
+                return Task.FromResult(new FullGame());
+            }
+            else
+            {
+                Console.WriteLine("$game: {0}, {1}, {2}, {3}, ", game.Genre, game.Overview, game.Rating, game.Title);
+                //foreach (var item in game.Reviews)
+                //{
+                //    list.Add(ReviewToProto(item));
+                //}
+
+                return Task.FromResult(new FullGame()
+                {
+                    Genre = game.Genre,
+                    Overview = game.Overview,
+                    Rating = game.Rating,
+                    Title = game.Title,
+                }) ;
+            }
+        }
+
+        private ReviewProto ReviewToProto(Review rev)
+        {
+            return new ReviewProto
+            {
+                Comment = rev.Comment,
+                Rate = rev.Rate
+            };
+        }
+
         /*
          * Llama los metodos antes del return con esas 2 variables (3 en el caso de asociar juego y usuario)
          */
@@ -841,6 +878,39 @@ namespace ServerProtocol.Protocol
             Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AsocGameUser, Result = restult, UserId = userId, GameTitle = gameTitle, UserNewNickName = "" };
             string msg = JsonConvert.SerializeObject(log);
             SendLog(msg);
+        }
+
+        public override Task<Response> UpdateGame(GameUpdate update, ServerCallContext context)
+        {
+            _gameSemaphore.WaitOne();
+            var game = _gameRepository.Games.Find(x => x.Title.Equals(update.Title));
+            _gameSemaphore.Release();
+            if(game is null)
+            {
+                return Task.FromResult(new Response
+                {
+                    Result = false
+                });
+            }
+            else
+            {
+                _gameSemaphore.WaitOne();
+                _gameRepository.Games.Remove(game);
+                _gameSemaphore.Release();
+                Game game1 = new Game()
+                {
+                    Title = update.NewName,
+                    Genre = update.NewGenre,
+                    Overview = game.Overview,
+                    Rating = game.Rating,
+                    Reviews = game.Reviews
+                };
+                _gameRepository.Games.Add(game1);
+                return Task.FromResult(new Response
+                {
+                    Result = true
+                });
+            }
         }
     }
 }

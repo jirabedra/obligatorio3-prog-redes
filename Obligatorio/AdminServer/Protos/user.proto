@@ -6,7 +6,7 @@ service UserService{
 	rpc AddUser (UserProto) returns (Response){};
 	rpc DeleteUser (UserName) returns (Response){};
 	rpc UpdateUser (UserUpdate) returns (Response){};
-	rpc GetGame(GameName) returns (GameProto){};
+	rpc GetGame(GameName) returns (FullGame){};
 	rpc AddGame (GameProto) returns (Response){};
 	rpc DeleteGame (GameName) returns (Response){};
 	rpc UpdateGame (GameUpdate) returns (Response){};
@@ -54,7 +54,6 @@ message FullGame{
 	string genre=2;
 	string overview=3;
 	float rating =4;
-	repeated ReviewProto reviews =5;
 }
 
 message ReviewProto{

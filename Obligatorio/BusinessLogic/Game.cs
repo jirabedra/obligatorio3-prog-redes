@@ -7,8 +7,8 @@ namespace BusinessLogic
     {
         public string Title { get; set; }
         public string Genre  { get; set; }
-        public List<Review> Reviews { get; set; }
-        public string Overview { get; set; }
+        public List<Review> Reviews { get; set; } = new List<Review>();
+        public string Overview { get; set; } = "";
         public float Rating { get; set; } = 0;
 
         public override bool Equals(object obj)

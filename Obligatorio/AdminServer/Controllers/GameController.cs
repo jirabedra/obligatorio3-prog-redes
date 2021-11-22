@@ -17,19 +17,18 @@ namespace AdminServer.Controllers
         [HttpGet("{name}")]
         public async Task<IActionResult> Get(string name)
         {
-            throw new NotImplementedException();
-            //using var channel = GrpcChannel.ForAddress("https://localhost:5001");
-            //var client = new UserService.UserServiceClient(channel);
-            //var reply = await client.AddGameAsync(
-            //                  game); ;
-            //if (reply.Result == true)
-            //{
-            //    return Ok();
-            //}
-            //else
-            //{
-            //    return NotFound();
-            //}
+            using var channel = GrpcChannel.ForAddress("https://localhost:5001");
+            var client = new UserService.UserServiceClient(channel);
+            var reply = await client.GetGameAsync(
+                              new GameName { Name = name }); ;
+            if (reply.Title.Equals(""))
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(reply);
+            }
         }
 
 
