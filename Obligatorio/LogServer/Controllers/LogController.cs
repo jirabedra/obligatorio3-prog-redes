@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -83,7 +84,28 @@ namespace LogServer.Controllers
 
         private string FilterByDate(string query)
         {
-            throw new NotImplementedException();
+            var parsed = HttpUtility.ParseQueryString(query);
+            string filterData = parsed["date"];
+            string ret = "";
+            Console.WriteLine($"FilterData tiene: {filterData}");
+            Console.WriteLine("Antes de castear a date");
+
+            string[] validFormat = new[] { "dd-MM-yyyy" };
+            //DateTime dateToFilter; 
+            //DateTime.TryParseExact(filterData, validFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateToFilter);
+
+            DateTime dateToFilter = Convert.ToDateTime($"{filterData} 12:10:15 PM", CultureInfo.InvariantCulture);
+
+            //dateToFilter = DateTime.Parse(filterData);
+            Console.WriteLine("Pasa el casteo a date");
+
+            Console.WriteLine($"Dia:{dateToFilter.Day}");
+            Console.WriteLine($"Mes:{dateToFilter.Month}");
+            Console.WriteLine($"Ano:{dateToFilter.Year}");
+
+            List<Log> logsfiltered = _logService.FilterByDate(dateToFilter);
+            ret = JsonConvert.SerializeObject(logsfiltered);
+            return ret;
         }
 
         private string FilterByGame(string query)
