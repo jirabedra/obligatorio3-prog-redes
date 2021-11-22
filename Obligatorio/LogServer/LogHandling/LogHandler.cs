@@ -14,30 +14,31 @@ namespace LogServer.LogHandling
         public LogHandler() 
         { 
         }
-
         public List<string> UpdateLogs()
         {
             List<string> newLogs = new List<string>();
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            var connection = factory.CreateConnection();
-            var channel = connection.CreateModel();
-            channel.QueueDeclare(queue: "obligatorioPRedes",
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += (model, ea) =>
+            var factory = new ConnectionFactory() { HostName = "localhost" }; //1 - Defino la conexion
+            using (var connection = factory.CreateConnection()) // 2 - Creamos la conexion
+            using (var channel = connection.CreateModel()) //3 / Definimos el canal de conexion
             {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                newLogs.Add(message);
-            };
-            channel.BasicConsume(queue: "obligatorioPRedes",
-                autoAck: true,
-                consumer: consumer);
-            Thread.Sleep(1000);
+                channel.QueueDeclare(queue: "obligatorioPRedes", // 4 - en el canal, definimos la Queue de la conexion
+                    durable: false,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
+
+                var consumer = new EventingBasicConsumer(channel); // 5 - definimos como consumimos los mensajes
+                consumer.Received += (model, ea) =>
+                {
+                    var body = ea.Body.ToArray();
+                    var message = Encoding.UTF8.GetString(body);
+                    newLogs.Add(message);
+                };
+                channel.BasicConsume(queue: "obligatorioPRedes",
+                    autoAck: true,
+                    consumer: consumer);
+                Console.ReadLine();
+            }
             return newLogs;
         }
     }

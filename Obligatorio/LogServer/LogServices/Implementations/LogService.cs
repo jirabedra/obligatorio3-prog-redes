@@ -1,7 +1,6 @@
 ﻿using Logging;
 using LogServer.LogHandling;
 using LogServer.LogServices.Interfaces;
-using LogsLogic;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,26 +12,41 @@ namespace LogServer.LogServices.Implementations
 {
     public class LogService : ILogService
     {
-        private static readonly LogHandler _logHandler = new LogHandler();
-        public static List<Log> _logs { get; private set; }
+        private static LogHandler _logHandler = new LogHandler();
+        public static List<Log> _logs { get; private set; } = new List<Log>();
         private Semaphore logsSemaphore = new Semaphore(1, 1);
 
         public void UpdateLogs()
         {
             List<string> newLogsAsStrings = _logHandler.UpdateLogs();
             List<Log> newLogs = ProcesssNewLogs(newLogsAsStrings);
-            logsSemaphore.WaitOne();
-            _logs.AddRange(newLogs);
-            logsSemaphore.Release();
+            try
+            {
+                foreach (var item in newLogs)
+                {
+                    _logs.Add(item);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         private List<Log> ProcesssNewLogs(List<string> newLogsAsStrings)
         {
             List<Log> newLogs = new List<Log>();
-            foreach (var log in newLogsAsStrings)
+            try
             {
-                Log newLog = JsonConvert.DeserializeObject<Log>(log);
-                newLogs.Add(newLog);
+                foreach (var log in newLogsAsStrings)
+                {
+                    Log newLog = JsonConvert.DeserializeObject<Log>(log);
+                    newLogs.Add(newLog);
+                }
+            }
+            catch (Exception e) 
+            {
+                Console.WriteLine(e.Message);
             }
             return newLogs;
         }
@@ -95,10 +109,7 @@ namespace LogServer.LogServices.Implementations
         public List<Log> GetAllLogs()
         {
             UpdateLogs();
-            logsSemaphore.WaitOne();
-            List<Log> auxLog = new List<Log>(_logs);
-            logsSemaphore.Release();
-            return auxLog;
+            return _logs;
         }
     }
 }

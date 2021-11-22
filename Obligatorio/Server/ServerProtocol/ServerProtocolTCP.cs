@@ -2,7 +2,6 @@
 using DataAccess.Repositories;
 using Grpc.Core;
 using Logging;
-using LogsLogic;
 using Newtonsoft.Json;
 using ProtocolLibrary;
 using RabbitMQ.Client;

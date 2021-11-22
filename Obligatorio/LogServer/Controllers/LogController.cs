@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using LogServer.LogServices.Implementations;
 using LogServer.LogServices.Interfaces;
-using LogsLogic;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -21,48 +21,47 @@ namespace LogServer.Controllers
         //Si es 2## es filtrado por Juego (titulo del juego)
         //Si es 3## es filtrado por Fecha (dd/mm/yyyy)
         //Si es 4## trae todos los logs
-        //https://localhost:44374/logs/1%%userId=68,userId=70
-        //https://localhost:44374/logs/2%%game=Fornite,game=Minecraft
-        //https://localhost:44374/logs/3%%date=20/10/2021
-        //https://localhost:44374/logs/4%%
+        //https://localhost:44374/logs?filter=1&userId=68,userId=70
+        //https://localhost:44374/logs?filter=2&game=Fornite,game=Minecraft
+        //https://localhost:44374/logs?filter=3&date=20/10/2021
+        //https://localhost:44374/logs?filter=4
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public IActionResult Get()
         {
-            //query = HttpContext.Request.Query["query"];
-            string query = HttpContext.Request.Query["name"];
+            string query = Request.QueryString.ToString();
+            var parsed = HttpUtility.ParseQueryString(query);
             if (query == null)
             {
-                return Ok();
+                return BadRequest();
             }
             else
             {
                 try 
                 {
-                    int filterReq = Int32.Parse(query.Split("%%")[0]);
-                    string filterData = query.Split("%%")[1];
-                    string ret = FilterLogs(filterReq, filterData);
+                    int filterReq = Int32.Parse(parsed["filter"]);
+                    string ret = FilterLogs(filterReq, query);
                     return Ok(ret);
                 }
                 catch (Exception e) 
                 { 
-                    return Ok(); 
+                    return BadRequest(e.Message); 
                 }
             }
         }
 
-        private string FilterLogs(int filterReq, string filterData)
+        private string FilterLogs(int filterReq, string query)
         {
             try
             {
                 switch (filterReq)
                 {
                     case 1:
-                        return FilterByUser(filterData);
+                        return FilterByUser(query);
                     case 2:
-                        return FilterByGame(filterData);
+                        return FilterByGame(query);
                     case 3:
-                        return FilterByDate(filterData);
+                        return FilterByDate(query);
                     case 4:
                         return GetAllLogs();
                 }
@@ -82,33 +81,37 @@ namespace LogServer.Controllers
             return ret;
         }
 
-        private string FilterByDate(string filterData)
+        private string FilterByDate(string query)
         {
             throw new NotImplementedException();
         }
 
-        private string FilterByGame(string filterData)
+        private string FilterByGame(string query)
         {
+            var parsed = HttpUtility.ParseQueryString(query);
+            string filterData = parsed["game"];
             string ret = "";
             string[] usersSplited = filterData.Split(",");
             List<string> gamesToFilter = new List<string>();
             foreach (var userToFilter in usersSplited)
             {
-                gamesToFilter.Add(userToFilter.Split("=")[1]);
+                gamesToFilter.Add(userToFilter);
             }
             List<Log> logsfiltered = _logService.FilterByGame(gamesToFilter);
             ret = JsonConvert.SerializeObject(logsfiltered);
             return ret;
         }
 
-        private string FilterByUser(string filterData)
+        private string FilterByUser(string query)
         {
+            var parsed = HttpUtility.ParseQueryString(query);
+            string filterData = parsed["userId"];
             string ret = "";
             string[] usersSplited = filterData.Split(",");
             List<int> usersToFilter = new List<int>();
             foreach (var userToFilter in usersSplited)
             {
-                usersToFilter.Add(Int32.Parse(userToFilter.Split("=")[1]));
+                usersToFilter.Add(Int32.Parse(userToFilter));
             }
             List<Log> logsfiltered = _logService.FilterByUser(usersToFilter);
             ret = JsonConvert.SerializeObject(logsfiltered);
