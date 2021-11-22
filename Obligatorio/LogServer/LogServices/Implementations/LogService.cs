@@ -61,7 +61,10 @@ namespace LogServer.LogServices.Implementations
                 validOperationType = log.OperationType == OperationType.AGame || log.OperationType == OperationType.BGame || log.OperationType == OperationType.MGame || log.OperationType == OperationType.AsocGameUser;
                 if (validOperationType)
                 {
-                    ret.Add(log);
+                    if (gameNames.Contains(log.GameTitle))
+                    {
+                        ret.Add(log);
+                    }
                 }
             }
             return ret;
@@ -87,6 +90,15 @@ namespace LogServer.LogServices.Implementations
                 }
             }
             return ret;
+        }
+
+        public List<Log> GetAllLogs()
+        {
+            UpdateLogs();
+            logsSemaphore.WaitOne();
+            List<Log> auxLog = new List<Log>(_logs);
+            logsSemaphore.Release();
+            return auxLog;
         }
     }
 }

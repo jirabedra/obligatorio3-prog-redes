@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LogServer.LogServices.Implementations;
+using LogServer.LogServices.Interfaces;
 using LogsLogic;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -14,32 +16,37 @@ namespace LogServer.Controllers
     [ApiController]
     public class LogController : Controller
     {
+        private static ILogService _logService = new LogService();
         //Si es 1## es filtrado por Usuario (la id del usuario)
         //Si es 2## es filtrado por Juego (titulo del juego)
-        //Si es 1## es filtrado por Fecha (dd/mm/yyyy)
-        //https://localhost:44374/logs/1##userId=68,userId=70
-        //https://localhost:44374/logs/2##game=Fornite,game=Minecraft
-        //https://localhost:44374/logs/3##date=20/10/2021
+        //Si es 3## es filtrado por Fecha (dd/mm/yyyy)
+        //Si es 4## trae todos los logs
+        //https://localhost:44374/logs/1%%userId=68,userId=70
+        //https://localhost:44374/logs/2%%game=Fornite,game=Minecraft
+        //https://localhost:44374/logs/3%%date=20/10/2021
+        //https://localhost:44374/logs/4%%
 
-        [HttpGet("{query}")]
-        public async Task<IActionResult> Get(string query)
+        [HttpGet]
+        public async Task<IActionResult> Get()
         {
+            //query = HttpContext.Request.Query["query"];
+            string query = HttpContext.Request.Query["name"];
             if (query == null)
             {
-                return BadRequest();
+                return Ok();
             }
             else
             {
                 try 
                 {
-                    int filterReq = Int32.Parse(query.Split("##")[0]);
-                    string filterData = query.Split("##")[1];
+                    int filterReq = Int32.Parse(query.Split("%%")[0]);
+                    string filterData = query.Split("%%")[1];
                     string ret = FilterLogs(filterReq, filterData);
                     return Ok(ret);
                 }
                 catch (Exception e) 
                 { 
-                    return BadRequest(); 
+                    return Ok(); 
                 }
             }
         }
@@ -56,6 +63,8 @@ namespace LogServer.Controllers
                         return FilterByGame(filterData);
                     case 3:
                         return FilterByDate(filterData);
+                    case 4:
+                        return GetAllLogs();
                 }
                 throw new ArgumentOutOfRangeException();
             }
@@ -65,6 +74,14 @@ namespace LogServer.Controllers
             }
         }
 
+        private string GetAllLogs()
+        {
+            string ret = "";
+            List<Log> logsfiltered = _logService.GetAllLogs();
+            ret = JsonConvert.SerializeObject(logsfiltered);
+            return ret;
+        }
+
         private string FilterByDate(string filterData)
         {
             throw new NotImplementedException();
@@ -72,7 +89,16 @@ namespace LogServer.Controllers
 
         private string FilterByGame(string filterData)
         {
-            throw new NotImplementedException();
+            string ret = "";
+            string[] usersSplited = filterData.Split(",");
+            List<string> gamesToFilter = new List<string>();
+            foreach (var userToFilter in usersSplited)
+            {
+                gamesToFilter.Add(userToFilter.Split("=")[1]);
+            }
+            List<Log> logsfiltered = _logService.FilterByGame(gamesToFilter);
+            ret = JsonConvert.SerializeObject(logsfiltered);
+            return ret;
         }
 
         private string FilterByUser(string filterData)
@@ -84,7 +110,7 @@ namespace LogServer.Controllers
             {
                 usersToFilter.Add(Int32.Parse(userToFilter.Split("=")[1]));
             }
-            List<Log> logsfiltered = new List<Log>(); //Aca hago la llamada a LogService
+            List<Log> logsfiltered = _logService.FilterByUser(usersToFilter);
             ret = JsonConvert.SerializeObject(logsfiltered);
             return ret;
         }

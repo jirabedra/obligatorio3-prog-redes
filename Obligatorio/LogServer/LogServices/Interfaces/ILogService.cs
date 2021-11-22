@@ -11,5 +11,6 @@ namespace LogServer.LogServices.Interfaces
         public List<Log> FilterByGame(List<string> gameNames);
         public List<Log> FilterByUser(List<int> userIds);
         public List<Log> FilterByDate(DateTime date);
+        public List<Log> GetAllLogs();
     }
 }
