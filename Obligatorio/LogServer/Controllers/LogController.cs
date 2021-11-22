@@ -20,11 +20,11 @@ namespace LogServer.Controllers
         private static ILogService _logService = new LogService();
         //Si es 1## es filtrado por Usuario (la id del usuario)
         //Si es 2## es filtrado por Juego (titulo del juego)
-        //Si es 3## es filtrado por Fecha (dd/mm/yyyy)
+        //Si es 3## es filtrado por Fecha (yyyy/MM/dd)
         //Si es 4## trae todos los logs
         //https://localhost:44374/logs?filter=1&userId=68,userId=70
         //https://localhost:44374/logs?filter=2&game=Fornite,game=Minecraft
-        //https://localhost:44374/logs?filter=3&date=20/10/2021
+        //https://localhost:44374/logs?filter=3&date=2021-10-20 (yyyy-MM-dd)
         //https://localhost:44374/logs?filter=4
 
         [HttpGet]
@@ -38,15 +38,15 @@ namespace LogServer.Controllers
             }
             else
             {
-                try 
+                try
                 {
                     int filterReq = Int32.Parse(parsed["filter"]);
                     string ret = FilterLogs(filterReq, query);
                     return Ok(ret);
                 }
-                catch (Exception e) 
-                { 
-                    return BadRequest(e.Message); 
+                catch (Exception e)
+                {
+                    return BadRequest(e.Message);
                 }
             }
         }
@@ -68,7 +68,7 @@ namespace LogServer.Controllers
                 }
                 throw new ArgumentOutOfRangeException();
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 throw new Exception();
             }
@@ -87,22 +87,7 @@ namespace LogServer.Controllers
             var parsed = HttpUtility.ParseQueryString(query);
             string filterData = parsed["date"];
             string ret = "";
-            Console.WriteLine($"FilterData tiene: {filterData}");
-            Console.WriteLine("Antes de castear a date");
-
-            string[] validFormat = new[] { "dd-MM-yyyy" };
-            //DateTime dateToFilter; 
-            //DateTime.TryParseExact(filterData, validFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateToFilter);
-
-            DateTime dateToFilter = Convert.ToDateTime($"{filterData} 12:10:15 PM", CultureInfo.InvariantCulture);
-
-            //dateToFilter = DateTime.Parse(filterData);
-            Console.WriteLine("Pasa el casteo a date");
-
-            Console.WriteLine($"Dia:{dateToFilter.Day}");
-            Console.WriteLine($"Mes:{dateToFilter.Month}");
-            Console.WriteLine($"Ano:{dateToFilter.Year}");
-
+            DateTime dateToFilter = DateTime.Parse(filterData);
             List<Log> logsfiltered = _logService.FilterByDate(dateToFilter);
             ret = JsonConvert.SerializeObject(logsfiltered);
             return ret;
