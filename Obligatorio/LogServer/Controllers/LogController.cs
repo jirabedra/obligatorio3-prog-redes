@@ -18,10 +18,10 @@ namespace LogServer.Controllers
     public class LogController : Controller
     {
         private static ILogService _logService = new LogService();
-        //Si es 1## es filtrado por Usuario (la id del usuario)
-        //Si es 2## es filtrado por Juego (titulo del juego)
-        //Si es 3## es filtrado por Fecha (yyyy/MM/dd)
-        //Si es 4## trae todos los logs
+        //Si filter es 1 es filtrado por Usuario (la id del usuario)
+        //Si filter es 2 es filtrado por Juego (titulo del juego)
+        //Si filter es 3 es filtrado por Fecha (yyyy/MM/dd)
+        //Si filter es 4 trae todos los logs
         //https://localhost:44374/logs?filter=1&userId=68,userId=70
         //https://localhost:44374/logs?filter=2&game=Fornite,game=Minecraft
         //https://localhost:44374/logs?filter=3&date=2021-10-20 (yyyy-MM-dd)

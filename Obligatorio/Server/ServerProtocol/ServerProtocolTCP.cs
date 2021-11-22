@@ -31,8 +31,6 @@ namespace ServerProtocol.Protocol
 
         public async Task RunServer()
         {
-            //LoadTestData();
-            LogTests();
             _tcpListener.Start();
             var listenForTcpClients = ListenForTCPClients();
             Console.WriteLine("The server application is now running.");
@@ -659,7 +657,7 @@ namespace ServerProtocol.Protocol
             var user = _userRepository.Users.Find(x => x.Id.Equals(id.Name));
             if (user is null)
             {
-                SendLogDeleteUser(user.Id, false);
+                SendLogDeleteUser(id.Name, false);
                 return Task.FromResult(new Response()
                 {
                     Result = false
@@ -681,8 +679,9 @@ namespace ServerProtocol.Protocol
             _gameSemaphore.WaitOne();
             var user = _gameRepository.Games.Find(x => x.Title.Equals(name.Name));
             _gameSemaphore.Release();
-            if(user is null)
+            if (user is null)
             {
+                SendLogDeleteGame(name.Name, false);
                 return Task.FromResult(new Response
                 {
                     Result = false
@@ -693,6 +692,7 @@ namespace ServerProtocol.Protocol
                 _gameSemaphore.WaitOne();
                 _gameRepository.DeleteGame(_gameRepository.GetIndex(name.Name));
                 _gameSemaphore.Release();
+                SendLogDeleteGame(name.Name, true);
                 return Task.FromResult(new Response
                 {
                     Result = true
@@ -710,10 +710,9 @@ namespace ServerProtocol.Protocol
         public override Task<Response> UpdateUser(UserUpdate userUpdate, ServerCallContext context)
         {
             var user = _userRepository.Users.Find(x => x.Id.Equals(userUpdate.Name));
-            //Aca log mq de MUsuario
             if (user is null)
             {
-                SendLogModifyUser(user.Id, false, userUpdate.Nickname);
+                SendLogModifyUser(userUpdate.Name, false, userUpdate.Nickname);
                 return Task.FromResult(new Response()
                 {
                     Result = false
@@ -771,7 +770,7 @@ namespace ServerProtocol.Protocol
         }
 
         //Borrar LogTests antes de la entrega
-        private void LogTests() 
+        private void LogTests()
         {
             Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.AUser, Result = true, UserId = 27, GameTitle = "", UserNewNickName = "" };
             Log log2 = new Log() { Date = DateTime.Now, OperationType = OperationType.BGame, Result = false, UserId = -1, GameTitle = "Zelda", UserNewNickName = "" };
@@ -786,7 +785,6 @@ namespace ServerProtocol.Protocol
 
         public override Task<Response> AddGame(GameProto request, ServerCallContext context)
         {
-
             Game game = new Game();
             game.Title = request.Title;
             game.Reviews = new List<Review>();
@@ -811,8 +809,6 @@ namespace ServerProtocol.Protocol
                     Result = true
                 });
             }
-
-
         }
 
 
@@ -820,7 +816,7 @@ namespace ServerProtocol.Protocol
         {
             //List<ReviewProto> list = new List<ReviewProto>();
             var game = _gameRepository.Games.Find(x => x.Title.Equals(name.Name));
-            if(game is null)
+            if (game is null)
             {
                 return Task.FromResult(new FullGame());
             }
@@ -838,7 +834,7 @@ namespace ServerProtocol.Protocol
                     Overview = game.Overview,
                     Rating = game.Rating,
                     Title = game.Title,
-                }) ;
+                });
             }
         }
 
@@ -885,8 +881,9 @@ namespace ServerProtocol.Protocol
             _gameSemaphore.WaitOne();
             var game = _gameRepository.Games.Find(x => x.Title.Equals(update.Title));
             _gameSemaphore.Release();
-            if(game is null)
+            if (game is null)
             {
+                SendLogModifyGame(update.Title, false);
                 return Task.FromResult(new Response
                 {
                     Result = false
@@ -906,6 +903,7 @@ namespace ServerProtocol.Protocol
                     Reviews = game.Reviews
                 };
                 _gameRepository.Games.Add(game1);
+                SendLogModifyGame(game1.Title, true);
                 return Task.FromResult(new Response
                 {
                     Result = true

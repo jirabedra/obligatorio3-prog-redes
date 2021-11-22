@@ -14,7 +14,7 @@ namespace AdminServer.Controllers
     public class UserController : Controller
     {
 
-        //https://localhost:44328/users/
+        //https://localhost:5561/users/
         [HttpPost]
         public async Task<IActionResult> Post()
         {
@@ -35,7 +35,7 @@ namespace AdminServer.Controllers
 
         //Si existe el usuario con el id indicado, se borra y retorna OK200.
         //Si no lo encuentra retorna 404NOTFOUND
-        //https://localhost:44328/users/3
+        //https://localhost:5561/users/3
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -65,7 +65,7 @@ namespace AdminServer.Controllers
         "nickname" : "Pepe"
         }*/
         //Si lo encuentra, retorno OK200, si no, retorna 404NOTFOUND.
-        //https://localhost:44328/users/
+        //https://localhost:5561/users/
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] UserUpdate user)
         {
