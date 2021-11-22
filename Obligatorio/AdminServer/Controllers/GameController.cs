@@ -14,6 +14,24 @@ namespace AdminServer.Controllers
     public class GameController : Controller
     {
 
+        [HttpGet("{name}")]
+        public async Task<IActionResult> Get(string name)
+        {
+            throw new NotImplementedException();
+            //using var channel = GrpcChannel.ForAddress("https://localhost:5001");
+            //var client = new UserService.UserServiceClient(channel);
+            //var reply = await client.AddGameAsync(
+            //                  game); ;
+            //if (reply.Result == true)
+            //{
+            //    return Ok();
+            //}
+            //else
+            //{
+            //    return NotFound();
+            //}
+        }
+
 
         //http://localhost:5561/games/ POST
         /*
@@ -41,8 +59,8 @@ namespace AdminServer.Controllers
 
         //Si existe el usuario con el id indicado, se borra y retorna OK200.
         //Si no lo encuentra retorna 404NOTFOUND
-        //https://localhost:44328/users/3
-        [HttpDelete("{id}")]
+        //http://localhost:5561/games/hola
+        [HttpDelete("{name}")]
         public async Task<IActionResult> Delete(string name)
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:5001");

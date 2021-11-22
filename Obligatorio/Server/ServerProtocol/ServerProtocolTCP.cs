@@ -676,6 +676,30 @@ namespace ServerProtocol.Protocol
             }
         }
 
+        public override Task<Response> DeleteGame(GameName name, ServerCallContext context)
+        {
+            _gameSemaphore.WaitOne();
+            var user = _gameRepository.Games.Find(x => x.Title.Equals(name.Name));
+            _gameSemaphore.Release();
+            if(user is null)
+            {
+                return Task.FromResult(new Response
+                {
+                    Result = false
+                });
+            }
+            else
+            {
+                _gameSemaphore.WaitOne();
+                _gameRepository.DeleteGame(_gameRepository.GetIndex(name.Name));
+                _gameSemaphore.Release();
+                return Task.FromResult(new Response
+                {
+                    Result = true
+                }); ;
+            }
+        }
+
         private void SendLogDeleteUser(int id, bool v)
         {
             Log log = new Log() { Date = DateTime.Now, OperationType = OperationType.BUser, Result = v, UserId = id, GameTitle = "", UserNewNickName = "" };
