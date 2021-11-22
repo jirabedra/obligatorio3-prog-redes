@@ -44,7 +44,7 @@ namespace LogServer.LogServices.Implementations
                     newLogs.Add(newLog);
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -57,9 +57,17 @@ namespace LogServer.LogServices.Implementations
             logsSemaphore.WaitOne();
             List<Log> auxLog = new List<Log>(_logs);
             logsSemaphore.Release();
-
-            throw new NotImplementedException();
-
+            List<Log> ret = new List<Log>();
+            bool validDate = false;
+            foreach (var log in auxLog)
+            {
+                validDate = date.Day == log.Date.Day && date.Month == log.Date.Month && date.Year == log.Date.Year;
+                if (validDate) 
+                {
+                    ret.Add(log);
+                }
+            }
+            return ret;
         }
 
         public List<Log> FilterByGame(List<string> gameNames)
