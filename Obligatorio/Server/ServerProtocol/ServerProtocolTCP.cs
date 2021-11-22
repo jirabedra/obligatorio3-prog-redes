@@ -762,9 +762,33 @@ namespace ServerProtocol.Protocol
 
         public override Task<Response> AddGame(GameProto request, ServerCallContext context)
         {
-            //Descomenta y pone los parametros: gameTitle, true/false (lo que corresponda), 
-            //SendLogAddGame(gameTitle, restult);
-            return base.AddGame(request, context);
+
+            Game game = new Game();
+            game.Title = request.Title;
+            game.Reviews = new List<Review>();
+            game.Genre = request.Genre;
+            _gameSemaphore.WaitOne();
+            if (_gameRepository.IsRegistered(game.Title))
+            {
+                SendLogAddGame(request.Title, false);
+                _gameSemaphore.Release();
+                return Task.FromResult(new Response()
+                {
+                    Result = false
+                }); ;
+            }
+            else
+            {
+                _gameRepository.Games.Add(game);
+                SendLogAddGame(request.Title, true);
+                _gameSemaphore.Release();
+                return Task.FromResult(new Response()
+                {
+                    Result = true
+                });
+            }
+
+
         }
 
         /*

@@ -14,14 +14,21 @@ namespace AdminServer.Controllers
     public class GameController : Controller
     {
 
-        //https://localhost:44328/games/
+
+        //http://localhost:5561/games/ POST
+        /*
+         *  {
+           "nickname": "Zelda",
+            "genre": "action"
+            }
+         */
         [HttpPost]
-        public async Task<IActionResult> Post()
+        public async Task<IActionResult> Post([FromBody] GameProto game)
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:5001");
             var client = new UserService.UserServiceClient(channel);
             var reply = await client.AddGameAsync(
-                              new GameProto()); ;
+                              game); ;
             if(reply.Result == true)
             {
                 return Ok();
@@ -30,7 +37,6 @@ namespace AdminServer.Controllers
             {
                 return NotFound();
             }
-
         }
 
         //Si existe el usuario con el id indicado, se borra y retorna OK200.
